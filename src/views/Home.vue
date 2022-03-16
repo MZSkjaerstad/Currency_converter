@@ -91,7 +91,7 @@ export default {
    }
 
    .currency__app {
-      height: 40%;
+      height: 25rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
