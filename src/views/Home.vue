@@ -11,7 +11,7 @@
 
             <div class="currency__convert">
                <select class="currency__select" v-model="fromCurrency">
-                  <option v-for="currency, index in allCurrencies" :value="index">{{ index }}</option>
+                  <option v-for="currencyName, shorthand in allCurrencies" :value="shorthand">{{ currencyName }}</option>
                </select>
 
                <svg class="currency__arrow" width="41" height="40" viewBox="0 0 41 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +19,7 @@
                </svg>
 
                <select class="currency__select" v-model="toCurrency">
-                  <option v-for="currency, index in allCurrencies" :value="index">{{ index }}</option>
+                  <option v-for="currencyName, shorthand in allCurrencies" :value="shorthand">{{ currencyName }}</option>
                </select>
             </div>
 
@@ -41,8 +41,8 @@ export default {
    data() {
       return {
          allCurrencies: {},
-         fromCurrency: 'eur',
-         toCurrency: 'nok',
+         fromCurrency: '',
+         toCurrency: '',
          input: null,
          output: 0,
       }
@@ -54,10 +54,10 @@ export default {
 
    methods: {
       async fetchRates() {
-         const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/eur.json`;
+         const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.json`;
          const res =  await fetch(url);
          const results = await res.json();
-         this.allCurrencies = results.eur;
+         this.allCurrencies = results;
          console.log(results)
       },
 
@@ -75,7 +75,7 @@ export default {
          console.log(results)
 
          const output = this.input * results[this.toCurrency]
-         this.output = output;
+         this.output = (Math.floor(output * 100) / 100).toFixed(2);
       }
    }
 }
@@ -106,8 +106,8 @@ export default {
 
    .currency__logo--upper {
       font-family: jaf-lapture;
-      font-size: 5rem;
-      font-weight: 500;
+      font-size: 6rem;
+      font-weight: 600;
       letter-spacing: 0.6rem;
       text-transform: lowercase;
    }
