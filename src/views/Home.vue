@@ -2,15 +2,16 @@
    <main class="currency">
       <div class="currency__app">
          <section class="currency__logo">
-            <div class="currency__logo--upper">Cash</div>
-            <div class="currency__logo--lower">Converter</div>
+            <h1>Cash</h1>
+            <h2>Converter</h2>
          </section>
 
          <section class="currency__controller">
-            <input class="currency__input" type="number" placeholder="Type in your value" v-model="input">
+            <input class="currency__input" type="number" :placeholder="`Type in your ${fromCurrency} value`" v-model="input">
 
             <div class="currency__convert">
                <select class="currency__select" v-model="fromCurrency">
+                  <option value="" disabled selected hidden>Choose Currency</option>
                   <option v-for="currencyName, shorthand in allCurrencies" :value="shorthand">{{ currencyName }}</option>
                </select>
 
@@ -19,15 +20,17 @@
                </svg>
 
                <select class="currency__select" v-model="toCurrency">
+                  <option value="" disabled selected hidden>Choose Currency</option>
                   <option v-for="currencyName, shorthand in allCurrencies" :value="shorthand">{{ currencyName }}</option>
                </select>
             </div>
 
-            <div class="currency__output">
-            {{ output }}
+            <div class="currency__output" >
+            {{ output }} {{ toCurrency }}
             </div>
 
-            <button class="currency__button" @click="convertTo">Convert</button>
+            <button class="currency__button" v-if="output === 0" @click="convertTo">Convert</button>
+            <div class="currency__message" v-else>converted!</div>
          </section>
       </div>
    </main>
@@ -53,30 +56,86 @@ export default {
    },
 
    methods: {
+      /* Fetches all currency rates in API */
       async fetchRates() {
          const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.json`;
-         const res =  await fetch(url);
-         const results = await res.json();
-         this.allCurrencies = results;
-         console.log(results)
+         const response =  await fetch(url);
+         try {
+            await this.handleFetchResponse(response);
+         } catch(error) {
+            this.error = error.message;
+         }
       },
 
-      /* Old Converter Function
-      convertTo() {
-         this.output = this.input / this.fromCurrency * this.toCurrency;
-      },
-      */
-
+      /* Uses API native converter function */
       async convertTo() {
          const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${this.fromCurrency}/${this.toCurrency}.json`;
-         const res =  await fetch(url);
-         const results = await res.json();
+         const response =  await fetch(url);
+         try {
+            await this.handleConvertResponse(response);
+         } catch (error) {
+            this.error = error.message;
+         }
+      },
 
-         console.log(results)
+      async handleFetchResponse(response) {
+         if (response.status >= 200 && response.status < 300) {
+            const results = await response.json();
+            this.allCurrencies = results;
+            console.log(results)
+         } else {
+            if(response.status === 404) {
+               throw new Error('Url ikke funnet.');
+               }
+               if(response.status === 401) {
+                  throw new Error('Ikke authorisert.');
+               }
+               if(response.status > 500) {
+                  throw new Error('Server error.');
+               }
+               throw new Error('Her gikk noe galt.');
+         }
+      },
 
-         const output = this.input * results[this.toCurrency]
-         this.output = (Math.floor(output * 100) / 100).toFixed(2);
+      async handleConvertResponse(response) {
+         if(response.status >= 200 && response.status < 300) {
+            const results = await response.json();
+            const output = this.input * results[this.toCurrency]
+            this.output = (Math.floor(output * 100) / 100).toFixed(2);
+         } else {
+            if(response.status === 404) {
+               throw new Error('Url ikke funnet.');
+               }
+               if(response.status === 401) {
+                  throw new Error('Ikke authorisert.');
+               }
+               if(response.status > 500) {
+                  throw new Error('Server error.');
+               }
+               throw new Error('Her gikk noe galt.');
+         }
       }
+   },
+
+   /* Resets output value if changes in inputs is registered */
+   watch: {
+      input(newValue, oldValue) {
+         if (newValue != oldValue) {
+            this.output = 0;
+         };
+      },
+
+      toCurrency(newCurrency, oldCurrency) {
+         if (newCurrency != oldCurrency) {
+            this.output = 0;
+         };
+      },
+
+      fromCurrency(newCurrency, oldCurrency) {
+         if (newCurrency != oldCurrency) {
+            this.output = 0;
+         };
+      },
    }
 }
 </script>
@@ -86,38 +145,23 @@ export default {
       height: 100%;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
+      justify-content: center;
       align-items: center;
    }
 
    .currency__app {
-      height: 25rem;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: center;
    }
 
    .currency__logo {
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding-bottom: var(--spacing-large);
       
-   }
-
-   .currency__logo--upper {
-      font-family: jaf-lapture;
-      font-size: 6rem;
-      font-weight: 600;
-      letter-spacing: 0.6rem;
-      text-transform: lowercase;
-   }
-
-   .currency__logo--lower {
-      font-size: 1.3rem;
-      font-style: italic;
-      font-weight: 700;
-      text-transform: uppercase;
-      transform: translateY(-0.5rem);
    }
 
    .currency__controller {
@@ -132,10 +176,11 @@ export default {
 
    .currency__input {
       width: 100%;
-      height: 1.6rem;
       color: var(--primary-color);
+      font-size: var(--font-size-input);
+      padding: var(--spacing-padding);
       background: var(--highlight-color);
-      border: solid var(--secondary-color) 1px;
+      border: var(--border-style) var(--secondary-color);
       border-radius: 10px;
       text-align: center;
       margin-bottom: 0.6rem;
@@ -143,7 +188,7 @@ export default {
 
    .currency__input:hover {
       color: var(--highlight-color);
-      background: var(--primary-color);
+      background: var(--secondary-color);
    }
 
    .currency__convert {
@@ -154,17 +199,18 @@ export default {
    }
 
    .currency__select {
-      height: 1.6rem;
       color: var(--primary-color);
+      font-size: var(--font-size-body);
+      padding: var(--spacing-padding);
       background: var(--highlight-color);
-      border: solid var(--secondary-color) 1px;
+      border: var(--border-style) var(--secondary-color);
       border-radius: 10px;
       text-align: center;
    }
 
    .currency__select:hover {
       color: var(--highlight-color);
-      background: var(--primary-color);
+      background: var(--secondary-color);
    }
 
    .currency__arrow {
@@ -172,25 +218,26 @@ export default {
    }
 
    .currency__output {
-      height: 4rem;
       color: var(--primary-color);
-      font-size: 1.4rem;
+      font-size: var(--font-size-output);
       font-style: italic;
       font-weight: 500;
+      text-transform: uppercase;
+      padding: var(--spacing-medium) 0 var(--spacing-small) 0;
       display: flex;
       align-items: center;
    }
 
    .currency__button {
       width: 100%;
-      color: var(--primary-color);
-      font-size: 1.2rem;
+      color: var(--highlight-color);
+      font-size: var(--font-size-button);
       font-style: italic;
       font-weight: 600;
       font-family: jaf-lapture;
       text-transform: lowercase;
-      background: var(--highlight-color);
-      border: solid var(--secondary-color) 1px;
+      background: var(--primary-color);
+      border: var(--border-style) var(--primary-color);
       border-radius: 10px;
       text-align: center;
       padding: 0.4rem;
@@ -198,6 +245,42 @@ export default {
 
    .currency__button:hover {
       color: var(--highlight-color);
-      background: var(--primary-color);
+      background: var(--secondary-color);
+      border: solid var(--secondary-color) 1px;
+   }
+
+   .currency__message {
+      color: var(--primary-color);
+      font-size: var(--font-size-button);
+      font-style: italic;
+      font-weight: 600;
+      font-family: jaf-lapture;
+      padding: 0.45rem;
+   }
+
+   @media screen and (max-device-width: 767px) {
+      .currency__app {
+         width: 90%;
+      }
+
+      .currency__controller {
+         padding: var(--spacing-small);
+      }
+
+      .currency__convert {
+         flex-direction: column;
+         padding-top: 2rem;
+      }
+
+
+      .currency__arrow {
+         height: 2.4rem;
+         margin: var(--spacing-padding) 0;
+      }
+
+      .currency__select {
+         width: 100%;
+         padding: var(--spacing-padding) 0;
+      }
    }
 </style>

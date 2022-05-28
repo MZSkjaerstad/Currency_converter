@@ -4,5 +4,26 @@
    --highlight-color: white;
 
    --font-family: "roboto";
-   --font-size-body: 12pt;
+   --font-size-body: 10pt;
+   --font-size-input: 1em;
+   --font-size-output: 1.4em;
+   --font-size-button: 1.6em;
+   --font-size-subtitle: 1.8em;
+   --font-size-title: 8em;
+
+   --spacing-padding: 0.3em;
+   --spacing-small: 20px;
+   --spacing-medium: 2em;
+   --spacing-large: 4.5em;
+
+   --border-style: solid 1px;
+}
+
+@media screen and (max-device-width: 767px) {
+   :root {
+      --font-size-body: 30pt;
+      --font-size-input: 1.2em;
+      --spacing-small: 40px;
+      --border-style: solid 4px;
+   }
 }

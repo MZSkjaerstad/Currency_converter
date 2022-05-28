@@ -4,3 +4,19 @@ body {
    font-family: var(--font-family);
    font-size: var(--font-size-body);
 }
+
+h1 {
+   font-size: var(--font-size-title);
+   font-weight: 600;
+   letter-spacing: 0.6rem;
+   text-transform: lowercase;
+   font-family: jaf-lapture;
+}
+
+h2 {
+   font-size: var(--font-size-subtitle);
+   font-style: italic;
+   font-weight: 700;
+   text-transform: uppercase;
+   transform: translateY(-0.5rem);
+}
