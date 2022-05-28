@@ -23,7 +23,10 @@
    :root {
       --font-size-body: 30pt;
       --font-size-input: 1.2em;
+      --font-size-title: 7em;
+
       --spacing-small: 40px;
+
       --border-style: solid 4px;
    }
 }
