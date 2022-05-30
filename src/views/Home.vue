@@ -75,14 +75,13 @@ export default {
             await this.handleConvertResponse(response);
          } catch (error) {
             this.error = error.message;
-         }
+         };
       },
 
       async handleFetchResponse(response) {
          if (response.status >= 200 && response.status < 300) {
             const results = await response.json();
             this.allCurrencies = results;
-            console.log(results)
          } else {
             if(response.status === 404) {
                throw new Error('Url ikke funnet.');
@@ -94,7 +93,7 @@ export default {
                   throw new Error('Server error.');
                }
                throw new Error('Her gikk noe galt.');
-         }
+         };
       },
 
       async handleConvertResponse(response) {
@@ -113,7 +112,7 @@ export default {
                   throw new Error('Server error.');
                }
                throw new Error('Her gikk noe galt.');
-         }
+         };
       }
    },
 
